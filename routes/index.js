@@ -53,7 +53,7 @@ router.get('/statistics', function(req, res, next) {
     if(err) {
       console.log(err);}
     var results = {
-      numberOfTweets: tweets.length
+      numberOfTweets: tweets.length,
       avgSentiment: dataProcessing.sentimentOverTime(tweets)
     };
     res.json(results);
