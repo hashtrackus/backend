@@ -19,6 +19,7 @@
     "morgan": "~1.5.3",
     "serve-favicon": "~2.2.1",
     "speakeasy-nlp": "^0.2.2",
+    "stripe": "^3.6.0",
     "twit": "^2.1.0"
   }
 }

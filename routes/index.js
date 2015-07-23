@@ -11,6 +11,9 @@ var domain = process.env.MAILGUN_DOMAIN;
 var mailgun = require('mailgun-js')({ apiKey: api_key, domain: domain });
 var dataProcessing = require('../dataProcessing');
 
+var cors = require('cors');
+var stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
 router.get('/data', function(req, res, next) {
   console.log("data hit");
   // console.log(Tweet);
@@ -93,6 +96,21 @@ router.post('/theMoney', function(req, res, next) {
       }
       res.json(user);
     });
+  });
+});
+
+router.post("/recordService", cors(), function(req, res) {
+  console.log(req.body.token);
+
+  stripe.charges.create({
+    amount: 995,
+    currency: "usd",
+    source: req.body.token,
+    description: "Email: " + req.body.email + " - searchTerm: " + req.body.searchTerm,
+    metadata: { userEmail: req.body.email, searchTerm: req.body.searchTerm }
+  }, function(err, charge) {
+    console.log(err);
+    res.json(charge);
   });
 });
 
