@@ -72,7 +72,7 @@ router.post('/theMoney', function(req, res, next) {
   var data = {
     from: 'Excited User <no-reply@hashtrack.us>',
     to: email,
-    subject: 'Thanks for signing up to HashTrack.is!',
+    subject: 'Thanks for signing up to HashTrack.us!',
     text: "Welcome to HashTrack.us! You are now tracking " + req.body.searchTerm +
           "\n\nView your dashboard at http://hashtrack.us/#!/dashboard" + userHash +
           "\n\n Happy Tracking! \n HackTrack.us Team"
@@ -83,37 +83,39 @@ router.post('/theMoney', function(req, res, next) {
     userHash: userHash
   };
 
-  saveUser.searchTerms = [];
-  saveUser.searchTerms[0] = {};
-  saveUser.searchTerms[0].term = req.body.searchTerm;
-  var newUser = new User(saveUser);
-  newUser.save(function(err, user) {
-    if (err) {
-      res.status(400).json({ error: "Validation failed" });
-    }
-    mailgun.messages().send(data, function (error, body) {
-      if(error){
-        console.log({ error: error });
-        res.status(500).json({ error: error });
-      }
-      res.json(user);
-    });
-  });
-});
-
-router.post("/recordService", cors(), function(req, res) {
-  console.log(req.body.token);
-
   stripe.charges.create({
     amount: 995,
     currency: "usd",
     source: req.body.token,
-    description: "Email: " + req.body.email + " - searchTerm: " + req.body.searchTerm,
-    metadata: { userEmail: req.body.email, searchTerm: req.body.searchTerm }
+    metadata: { userEmail: email, searchTerm: req.body.searchTerm }
   }, function(err, charge) {
-    console.log(err);
-    res.json(charge);
+    if (err) {
+      console.error(err);
+      res.status(400).json({ error: "Payment failed" });
+      return;
+    }
+    saveUser.searchTerms = [];
+    saveUser.searchTerms[0] = {};
+    saveUser.searchTerms[0].term = req.body.searchTerm;
+    var newUser = new User(saveUser);
+    newUser.save(function(err, user) {
+      if (err) {
+        console.error(err);
+        res.status(400).json({ error: "Validation failed" });
+        return;
+      }
+      mailgun.messages().send(data, function (error, body) {
+        if(error){
+          console.error(error);
+          res.status(500).json({ error: error });
+          return;
+        }
+        res.json(user);
+      });
+    });
+
   });
+
 });
 
 module.exports = router;
