@@ -70,9 +70,9 @@ router.post('/theMoney', function(req, res, next) {
   var email = req.body.email;
   var userHash = md5(email);
   var data = {
-    from: 'Excited User <no-reply@hashtrax.us>',
+    from: 'Excited User <no-reply@hashtrack.us>',
     to: email,
-    subject: 'Thanks for signing up to HashTraxxx!',
+    subject: 'Thanks for signing up to HashTrack.is!',
     text: "Welcome to HashTrack.us! You are now tracking " + req.body.searchTerm +
           "\n\nView your dashboard at http://hashtrack.us/#!/" + userHash +
           "\n\n Happy Tracking! \n HackTrack.us Team"
