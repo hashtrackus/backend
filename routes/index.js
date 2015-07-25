@@ -74,7 +74,7 @@ router.post('/theMoney', function(req, res, next) {
     to: email,
     subject: 'Thanks for signing up to HashTrack.is!',
     text: "Welcome to HashTrack.us! You are now tracking " + req.body.searchTerm +
-          "\n\nView your dashboard at http://hashtrack.us/#!/" + userHash +
+          "\n\nView your dashboard at http://hashtrack.us/#!/dashboard" + userHash +
           "\n\n Happy Tracking! \n HackTrack.us Team"
   };
 
