@@ -7,9 +7,9 @@ var bodyParser = require('body-parser');
 var mongoose = require("mongoose")
 var routes = require('./routes/index');
 var users = require('./routes/users');
-var cors = require('cors');
+import cors from 'cors';
 
-var app = express();
+let app = express();
 mongoose.connect(process.env.MONGOLAB_URI);
 
 // view engine setup
@@ -30,7 +30,7 @@ app.use('/', routes);
 app.use('/users', users);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   var err = new Error('Not Found');
   err.status = 404;
   next(err);

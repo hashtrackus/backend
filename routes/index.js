@@ -14,15 +14,17 @@ var dataProcessing = require('../dataProcessing');
 var cors = require('cors');
 var stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-router.get('/data', function(req, res, next) {
-  console.log("data hit");
-  // console.log(Tweet);
-  Tweet.find({}, function(err, tweets){
-    if(err){console.log(err);}
-    // console.log(tweets);
-    res.json(tweets);
+import pg from 'pg';
+
+let conString = 'postgres://localhost/htu';
+
+pg.connect(conString, (err, client, done) => {
+  router.get('/', (req, res, next) => {
+    client.query('SELECT * from users limit 1', (err, result) => {
+      console.log(result.rows[0]);
+      res.render("index", { email: result.rows[0].email } );
+    });
   });
-  // return;
 });
 
 router.get('/dashboard/:hash', function(req, res, next) {
