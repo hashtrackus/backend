@@ -8,6 +8,8 @@ var mongoose = require("mongoose")
 var routes = require('./routes/index');
 var users = require('./routes/users');
 import cors from 'cors';
+import passport from 'passport';
+import session from 'express-session';
 
 let app = express();
 mongoose.connect(process.env.MONGOLAB_URI);
@@ -24,7 +26,16 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(session({ secret: process.env.SESSION_SECRET, saveUninitialized: true, resave: false, cookie: { secure: true } }));
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(cors());
+
+app.use( (req, user, next) => {
+  console.log("PARAMS", req.body, req.query, req.params);
+  next();
+});
 
 app.use('/', routes);
 app.use('/users', users);

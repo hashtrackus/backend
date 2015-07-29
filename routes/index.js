@@ -15,16 +15,61 @@ var cors = require('cors');
 var stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 import pg from 'pg';
+import passport from 'passport';
+import { Strategy as LocalStrategy } from 'passport-local';
 
 let conString = 'postgres://localhost/htu';
 
 pg.connect(conString, (err, client, done) => {
+
+  passport.use(new LocalStrategy({
+      usernameField: 'email',
+      passwordField: 'password'
+    },
+    function(username, password, done) {
+      let email = username;
+      client.query('SELECT * from users where email = $1 limit 1', [email], (err, result) => {
+        if (err) { return done(err); }
+        if (!result || !result.rows) {
+          return done(null, false, { message: 'Incorrect username.' });
+        }
+        let user = result.rows[0]
+        if (user.password !== password) {
+          return done(null, false, { message: 'Incorrect password.' });
+        }
+        // generate a new random token
+        user.token = require('crypto').randomBytes(64).toString('hex');
+
+        client.query('update users set current_access_token = $1 where id = $2',
+                    [user.token, user.id], (err, result) => {
+          let { email, token } = user;
+          return done(null, {email, token} );
+        })
+      });
+    }
+  ));
+
+  passport.serializeUser(function(user, done) {
+    done(null, user.token);
+  });
+
+  passport.deserializeUser(function(token, done) {
+    client.query('SELECT * from users where current_access_token = $1 limit 1', [token], (err, result) => {
+      done(err, result.rows[0]);
+    });
+  });
+
   router.get('/', (req, res, next) => {
     client.query('SELECT * from users limit 1', (err, result) => {
       console.log(result.rows[0]);
       res.render("index", { email: result.rows[0].email } );
     });
   });
+
+  router.post('/login', passport.authenticate('local'), function(req, res) {
+    res.json(req.user);
+  });
+
 });
 
 router.get('/dashboard/:hash', function(req, res, next) {
